@@ -33,6 +33,8 @@ import { Home, ExampleUI, Hints, Subgraph } from "./views";
 import { useStaticJsonRPC } from "./hooks";
 
 const { ethers } = require("ethers");
+
+const poolServerUrl = "http://localhost:49832/";
 /*
     Welcome to 🏗 scaffold-eth !
 
@@ -167,7 +169,7 @@ function App(props) {
   ]);
 
   // keep track of a variable from the contract in the local React state:
-  const purpose = useContractReader(readContracts, "YourContract", "purpose");
+  const purpose = useContractReader(readContracts, "MetaMultiSig", "purpose");
 
   /*
   const addressFromENS = useResolveName(mainnetProvider, "austingriffith.eth");
@@ -189,17 +191,17 @@ function App(props) {
       writeContracts &&
       mainnetContracts
     ) {
-      console.log("_____________________________________ 🏗 scaffold-eth _____________________________________");
-      console.log("🌎 mainnetProvider", mainnetProvider);
-      console.log("🏠 localChainId", localChainId);
-      console.log("👩‍💼 selected address:", address);
-      console.log("🕵🏻‍♂️ selectedChainId:", selectedChainId);
-      console.log("💵 yourLocalBalance", yourLocalBalance ? ethers.utils.formatEther(yourLocalBalance) : "...");
-      console.log("💵 yourMainnetBalance", yourMainnetBalance ? ethers.utils.formatEther(yourMainnetBalance) : "...");
-      console.log("📝 readContracts", readContracts);
-      console.log("🌍 DAI contract on mainnet:", mainnetContracts);
-      console.log("💵 yourMainnetDAIBalance", myMainnetDAIBalance);
-      console.log("🔐 writeContracts", writeContracts);
+      // console.log("_____________________________________ 🏗 scaffold-eth _____________________________________");
+      // console.log("🌎 mainnetProvider", mainnetProvider);
+      // console.log("🏠 localChainId", localChainId);
+      // console.log("👩‍💼 selected address:", address);
+      // console.log("🕵🏻‍♂️ selectedChainId:", selectedChainId);
+      // console.log("💵 yourLocalBalance", yourLocalBalance ? ethers.utils.formatEther(yourLocalBalance) : "...");
+      // console.log("💵 yourMainnetBalance", yourMainnetBalance ? ethers.utils.formatEther(yourMainnetBalance) : "...");
+      // console.log("📝 readContracts", readContracts);
+      // console.log("🌍 DAI contract on mainnet:", mainnetContracts);
+      // console.log("💵 yourMainnetDAIBalance", myMainnetDAIBalance);
+      // console.log("🔐 writeContracts", writeContracts);
     }
   }, [
     mainnetProvider,
@@ -310,7 +312,14 @@ function App(props) {
       <Switch>
         <Route exact path="/">
           {/* pass in any web3 props to this Home component. For example, yourLocalBalance */}
-          <Home yourLocalBalance={yourLocalBalance} readContracts={readContracts} />
+          <Home
+            address={address}
+            chainId={localChainId}
+            readContracts={readContracts}
+            mainnetProvider={mainnetProvider}
+            poolServerUrl={poolServerUrl}
+            userSigner={userSigner}
+          />
         </Route>
         <Route exact path="/debug">
           {/*
@@ -320,7 +329,7 @@ function App(props) {
             */}
 
           <Contract
-            name="YourContract"
+            name="MetaMultiSig"
             price={price}
             signer={userSigner}
             provider={localProvider}
