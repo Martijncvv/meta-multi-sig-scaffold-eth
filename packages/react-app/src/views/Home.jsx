@@ -14,88 +14,128 @@ axios.defaults.baseURL = "http://localhost:5000";
  * @param {*} readContracts contracts from current chain already pre-loaded using ethers contract module. More here https://docs.ethers.io/v5/api/contract/contract/
  * @returns react component
  **/
-function Home({ address, chainId, readContracts, mainnetProvider, poolServerUrl, userSigner }) {
-  const [txNewSigner, setTxNewSigner] = useState("0x");
-  const [txValue, setTxValue] = useState(0);
-  const [txData, setTxData] = useState("");
+function Home({ address, chainId, readContracts, writeContracts, mainnetProvider, poolServerUrl, tx, userSigner }) {
+  const [txInput, setTxInput] = useState("0x");
+  const [txValue, setTxValue] = useState("0");
 
-  const [signatures, setSignatures] = useState([]);
+  const [orderedSignatures, setOrderedSignatures] = useState([]);
+
+  const [txInfo, setTxInfo] = useState({});
+  const [error, setError] = useState("");
 
   const signaturesRequired = useContractReader(readContracts, "MetaMultiSig", "signaturesRequired");
   const txNonce = useContractReader(readContracts, "MetaMultiSig", "nonce");
   const isSigner = useContractReader(readContracts, "MetaMultiSig", "accountToSignpermission", [address]);
 
-  // const getTxHash = useContractReader(readContracts, "MetaMultiSig", "getTxHash", [to, nonce, chainid, value, data]);
-  // const verifyAndExecuteTx = useContractReader(readContracts, "MetaMultiSig", "verifyAndExecuteTx", [to, chainid, value, data, signatures]);
-  async function getTxSignature() {
-    if (isSigner) {
-      console.log("txNewSigner");
-      console.log(txNewSigner);
-      console.log("txNonce");
-      console.log(txNonce);
-      console.log("chainId");
-      console.log(chainId);
-      console.log("txValue");
-      console.log(txValue);
+  async function getTxInfo() {
+    axios
 
+      .get(`/api/txInfo/${txNonce}`)
+      .then(function (response) {
+        console.log(response.data);
+        let signatures = response.data.signatures;
+        signatures.sort((a, b) => {
+          return a - b;
+        });
+        setOrderedSignatures(signatures);
+        setTxInfo(response.data);
+      })
+      .catch(function (error) {
+        console.log(error);
+
+        setError("No open tx available, create a transaction");
+      });
+  }
+
+  async function createAndSignTx() {
+    if (isSigner) {
       const contractAddress = readContracts["MetaMultiSig"].address;
       const txTo = contractAddress;
+      const unencodedCalldata = `addSigner(address), [
+        ${txInput},
+      ]`;
+      const calldataAbi = "addSigner(address)";
 
-      const txCalldata = readContracts["MetaMultiSig"].interface.encodeFunctionData("addSigner(address)", [
-        txNewSigner,
-      ]);
-
+      const txCalldata = readContracts["MetaMultiSig"].interface.encodeFunctionData(calldataAbi, [txInput]);
       const dataHash = ethers.utils.solidityKeccak256(
         ["address", "uint256", "uint256", "uint256", "bytes"],
         [txTo, txNonce, chainId, txValue, txCalldata],
       );
 
-      const signature = await userSigner.signMessage(ethers.utils.arrayify(dataHash));
-      console.log(signature);
+      const txSignature = await userSigner.signMessage(ethers.utils.arrayify(dataHash));
 
-      postSignature(signature);
+      let payload = {
+        nonce: `${txNonce}`,
+        creator: address,
+        to: txTo,
+        unencodedCalldata: unencodedCalldata,
+        calldataAbi: calldataAbi,
+        value: txValue,
+        signatures: txSignature,
+      };
+
+      axios
+        .post(`/api/storeTx/`, payload)
+        .then(function (response) {
+          console.log(response);
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
     } else {
       console.log("NOT VALID SIGNER");
     }
   }
-  function executeTx() {
-    // const verifyAndExecuteTx = useContractReader(readContracts, "MetaMultiSig", "verifyAndExecuteTx", [
-    //   txTo,
-    //   chainId,
-    //   txValue,
-    //   txData,
-    //   signatures,
-    // ]);
-    return;
+
+  async function signTx() {
+    if (isSigner) {
+      const txCalldata = readContracts["MetaMultiSig"].interface.encodeFunctionData(txInfo.calldataAbi, [txInput]);
+
+      const dataHash = ethers.utils.solidityKeccak256(
+        ["address", "uint256", "uint256", "uint256", "bytes"],
+        [txInfo.to, txNonce, chainId, txInfo.value, txCalldata],
+      );
+
+      const txSignature = await userSigner.signMessage(ethers.utils.arrayify(dataHash));
+
+      let payload = {
+        nonce: `${txNonce}`,
+        signature: txSignature,
+      };
+
+      axios
+        .put(`/api/signTx/`, payload)
+        .then(function (response) {
+          console.log(response);
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    } else {
+      console.log("NOT VALID SIGNER");
+    }
   }
 
-  async function getSignaturesOfNonce() {
+  async function executeTx() {
+    const txData = await readContracts["MetaMultiSig"].interface.encodeFunctionData("addSigner(address)", [txInput]);
+
+    const txResult = await tx({
+      to: txInfo.to,
+      value: txInfo.value,
+      data: await readContracts["MetaMultiSig"].interface.encodeFunctionData(
+        "verifyAndExecuteTx(address, uint256, uint256, bytes, bytes[])",
+        [txInfo.to, chainId, txInfo.value, txData, orderedSignatures],
+      ),
+    });
+
+    let payload = { nonce: `${txNonce}` };
     axios
-      // .get(`/api/signatures/${txNonce}`)
-      .get(`/api/signatures/${txNonce}`)
+
+      .put(`/api/setTxExecuted/`, payload)
       .then(function (response) {
-        // handle success
-        console.log(response.data);
-        setSignatures(response.data.signatures);
-      })
-      .catch(function (error) {
-        // handle error
-        console.log(error);
-      });
-  }
-  async function postSignature(_signature) {
-    let payload = { nonce: `${txNonce}`, signature: _signature };
-    console.log("payload");
-    console.log(payload);
-    axios
-      // .post(`/api/signatures/${txNonce}/${_signature}`)
-      .post(`/api/postsignatures/`, payload)
-      .then(function (response) {
-        // handle success
         console.log(response);
       })
       .catch(function (error) {
-        // handle error
         console.log(error);
       });
   }
@@ -111,38 +151,73 @@ function Home({ address, chainId, readContracts, mainnetProvider, poolServerUrl,
         <h4>Tx nonce: {`${txNonce}`}</h4>
         <h4>Signer: {`${isSigner}`}</h4>
         <Divider />
+        {error.length > 0 ? (
+          <p>{error}</p>
+        ) : (
+          <Button
+            onClick={() => {
+              getTxInfo();
+            }}
+          >
+            Get Open Tx Details
+          </Button>
+        )}
+        {Object.keys(txInfo).length > 0 && (
+          <div>
+            <h3>Creator</h3>
+            <p>{txInfo.creator}</p>
+            <h3>Unencoded Calldata</h3>
+            <p>{txInfo.unencodedCalldata}</p>
+            <h3>Value</h3>
+            <p>{txInfo.value}</p>
+            <div>
+              <h3>Signatures</h3>
+              {orderedSignatures.map((signature, index) => (
+                <p key={index}> {signature.substring(0, 6) + "..." + signature.substring(signature.length - 6)}</p>
+              ))}
+            </div>
+            <h4>Confirm Address</h4>
+            <Input
+              placeholder="Signer {Address}"
+              onChange={e => {
+                setTxInput(e.target.value);
+              }}
+            />
+            <Button
+              disabled={signaturesRequired > orderedSignatures.length}
+              onClick={() => {
+                executeTx();
+              }}
+            >
+              Execute Transaction
+            </Button>
+
+            <Button
+              onClick={() => {
+                signTx();
+              }}
+            >
+              Sign tx
+            </Button>
+          </div>
+        )}
+        <Divider />
+        <Divider />
         <h3>Create AddSigner Transaction</h3>
         <Input
-          placeholder="Added Signer {Address}"
+          placeholder="Signer {Address}"
           onChange={e => {
-            setTxNewSigner(e.target.value);
+            setTxInput(e.target.value);
           }}
         />
         <Button
           onClick={() => {
-            getTxSignature();
+            createAndSignTx();
           }}
         >
-          Sign Transaction
+          Sign Tx & save Signature
         </Button>
         <Divider />
-        <Button
-          onClick={() => {
-            getSignaturesOfNonce();
-          }}
-        >
-          Get Signatures
-        </Button>
-        {signatures.length > 0 && signatures.map((signature, index) => <p key={index}>{signature}</p>)}
-        <Divider />
-        <Button
-          disabled={signaturesRequired > signatures.length}
-          onClick={() => {
-            executeTx();
-          }}
-        >
-          Execute Transaction
-        </Button>
       </div>
     </div>
   );
