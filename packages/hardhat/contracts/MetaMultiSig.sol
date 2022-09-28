@@ -38,26 +38,30 @@ contract MetaMultiSig {
     using ECDSA for bytes32;
 
     error Unauthorized();
-    error TooLittleSignatures(uint256 valid, uint256 required);
+    error TooLittleValidSignatures(uint256 valid, uint256 required);
 
     uint public signaturesRequired;
     mapping(address => bool) public accountToSignpermission;
+    uint256 public nrOfSigners;
 
     uint256 public nonce;
 
     /// @notice Adds initial signers
     /// @param _signers  Address of signers
-    /// @param _requiredSignatures  Required signatures
-    constructor(address[] memory _signers, uint256 _requiredSignatures)
+    /// @param _signaturesRequired  Required signatures
+    constructor(address[] memory _signers, uint256 _signaturesRequired)
         payable
     {
         require(
-            _requiredSignatures > 0,
+            _signaturesRequired > 0,
             "MetaMultiSig, RequiredSigs must be > 0"
         );
-        require(_signers.length > 0, "MetaMultiSig, Nr of signers must be > 0");
-
-        signaturesRequired = _requiredSignatures;
+        require(
+            _signers.length >= _signaturesRequired,
+            "MetaMultiSig, Nr of signers must be >= required signatures"
+        );
+        nrOfSigners = _signers.length;
+        signaturesRequired = _signaturesRequired;
         for (uint256 i = 0; i < _signers.length; i++) {
             accountToSignpermission[_signers[i]] = true;
         }
@@ -80,25 +84,36 @@ contract MetaMultiSig {
     /// @param _signer  Address of added signer
     function addSigner(address _signer) public self {
         accountToSignpermission[_signer] = true;
+        nrOfSigners++;
         emit SignerAdded(_signer);
     }
 
     /// @notice Sets account of signers mapping to false
     /// @param _signer  Address of removed signer
     function removeSigner(address _signer) public self {
+        require(
+            nrOfSigners > signaturesRequired,
+            "MetaMultiSig, nr of signers must > signaturesRequired"
+        );
+
         accountToSignpermission[_signer] = false;
+        nrOfSigners--;
         emit SignerRemoved(_signer);
     }
 
     /// @notice Updates required amount of valid signatures
-    /// @param _requiredSignatures  required amount of valid signatures
-    function updateRequiredSignatures(uint256 _requiredSignatures) public self {
+    /// @param _signaturesRequired  required amount of valid signatures
+    function updateRequiredSignatures(uint256 _signaturesRequired) public self {
         require(
-            _requiredSignatures > 0,
+            _signaturesRequired > 0,
             "MetaMultiSig, RequiredSignatures can't be 0"
         );
-        signaturesRequired = _requiredSignatures;
-        emit UpdatedRequiredSignatures(_requiredSignatures);
+        require(
+            _signaturesRequired <= nrOfSigners,
+            "MetaMultiSig, Req sigs must be >= nrOfSigners"
+        );
+        signaturesRequired = _signaturesRequired;
+        emit UpdatedRequiredSignatures(_signaturesRequired);
     }
 
     /// @notice Creates encodePacked keccak256 hash of tx info
@@ -166,7 +181,7 @@ contract MetaMultiSig {
             require(success, "Tx failed");
             emit TxExecuted(msg.sender, _to, _data, _value, _signatures);
         } else {
-            revert TooLittleSignatures({
+            revert TooLittleValidSignatures({
                 valid: validSignatures,
                 required: signaturesRequired
             });
