@@ -3,7 +3,7 @@ import { Divider, Input, Button, Select } from "antd";
 import { ethers } from "ethers";
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Address } from "../components";
+import { Address, Balance, Events } from "../components";
 const { Option } = Select;
 
 const axios = require("axios");
@@ -15,9 +15,22 @@ axios.defaults.baseURL = "http://localhost:5000";
  * @param {*} readContracts contracts from current chain already pre-loaded using ethers contract module. More here https://docs.ethers.io/v5/api/contract/contract/
  * @returns react component
  **/
-function Home({ address, chainId, readContracts, writeContracts, mainnetProvider, poolServerUrl, tx, userSigner }) {
-  const [txInput, setTxInput] = useState("");
-  const [txInputPlaceHolder, setTxInputPlaceHolder] = useState("New Signer (address)");
+function Home({
+  localProvider,
+  address,
+  chainId,
+  readContracts,
+  writeContracts,
+  mainnetProvider,
+  poolServerUrl,
+  tx,
+  userSigner,
+  price,
+}) {
+  const [txInput_1, setTxInput_1] = useState("");
+  const [txInput_2, setTxInput_2] = useState("");
+  const [txInputPlaceHolder_1, setTxInputPlaceHolder_1] = useState("New Signer (address)");
+  const [txInputPlaceHolder_2, setTxInputPlaceHolder_2] = useState("Amount in ETH (uint)");
   const [txValue, setTxValue] = useState("0");
   const [calldataAbi, setCalldataAbi] = useState("addSigner(address)");
 
@@ -32,12 +45,14 @@ function Home({ address, chainId, readContracts, writeContracts, mainnetProvider
   const isSigner = useContractReader(readContracts, "MetaMultiSig", "accountToSignpermission", [address]);
 
   async function getTxInfo() {
-    setTxInput("");
+    setTxInput_1("");
+    setTxInput_2("");
+    setTxInfo({});
     axios
 
       .get(`/api/txInfo/${txNonce}`)
       .then(function (response) {
-        console.log(response.data);
+        // console.log(response.data);
         let signatures = response.data.signatures;
         signatures.sort((a, b) => {
           return a - b;
@@ -62,15 +77,36 @@ function Home({ address, chainId, readContracts, writeContracts, mainnetProvider
     if (isSigner) {
       const contractAddress = readContracts["MetaMultiSig"].address;
       const txTo = contractAddress;
-      const unencodedCalldata = `${calldataAbi}, [
-        ${txInput}
-      ]`;
 
-      const txCalldata = readContracts["MetaMultiSig"].interface.encodeFunctionData(calldataAbi, [txInput]);
+      let unencodedCalldata;
+      let txCalldata;
+
+      if (txInput_2) {
+        unencodedCalldata = `${calldataAbi}, [
+          ${txInput_1},${txInput_2}
+        ]`;
+        console.log("2222");
+
+        txCalldata = readContracts["MetaMultiSig"].interface.encodeFunctionData(calldataAbi, [
+          txInput_1,
+          ethers.utils.parseEther(txInput_2),
+        ]);
+      } else {
+        console.log("1111");
+        unencodedCalldata = `${calldataAbi}, [
+          ${txInput_1}
+        ]`;
+        txCalldata = readContracts["MetaMultiSig"].interface.encodeFunctionData(calldataAbi, [txInput_1]);
+      }
+
+      console.log("CREATE AND SIGN txCalldata ", txCalldata);
+      console.log("CREATE AND SIGN calldataAbi ", calldataAbi);
+
       const dataHash = ethers.utils.solidityKeccak256(
         ["address", "uint256", "uint256", "uint256", "bytes"],
         [txTo, txNonce, chainId, txValue, txCalldata],
       );
+      console.log("CREATE AND SIGN dataHash ", dataHash);
 
       const txSignature = await userSigner.signMessage(ethers.utils.arrayify(dataHash));
 
@@ -83,7 +119,7 @@ function Home({ address, chainId, readContracts, writeContracts, mainnetProvider
         value: txValue,
         signatures: txSignature,
       };
-      console.log(payload);
+      // console.log(payload);
       axios
         .post(`/api/storeTx/`, payload)
         .then(function (response) {
@@ -101,12 +137,28 @@ function Home({ address, chainId, readContracts, writeContracts, mainnetProvider
 
   async function signTx() {
     if (isSigner) {
-      const txCalldata = readContracts["MetaMultiSig"].interface.encodeFunctionData(txInfo.calldataAbi, [txInput]);
+      let txCalldata;
+      console.log("txInput_1 ", txInput_1);
+      console.log("txInput_2 ", txInput_2);
+      if (txInput_2) {
+        txCalldata = readContracts["MetaMultiSig"].interface.encodeFunctionData(txInfo.calldataAbi, [
+          txInput_1,
+          ethers.utils.parseEther(txInput_2),
+        ]);
+        console.log("2222");
+      } else {
+        console.log("1111");
+        txCalldata = readContracts["MetaMultiSig"].interface.encodeFunctionData(txInfo.calldataAbi, [txInput_1]);
+      }
+
+      console.log("SIGN txCalldata ", txCalldata);
+      console.log(" SIGN calldataAbi ", txInfo.calldataAbi);
 
       const dataHash = ethers.utils.solidityKeccak256(
         ["address", "uint256", "uint256", "uint256", "bytes"],
         [txInfo.to, txNonce, chainId, txInfo.value, txCalldata],
       );
+      console.log(" SIGN dataHash ", dataHash);
 
       const txSignature = await userSigner.signMessage(ethers.utils.arrayify(dataHash));
 
@@ -130,14 +182,29 @@ function Home({ address, chainId, readContracts, writeContracts, mainnetProvider
   }
 
   async function executeTx() {
-    const txData = await readContracts["MetaMultiSig"].interface.encodeFunctionData(txInfo.calldataAbi, [txInput]);
+    let txCalldata;
+    console.log("txInput_1 ", txInput_1);
+    console.log("txInput_2 ", txInput_2);
+
+    if (txInput_2) {
+      console.log("2222");
+      txCalldata = await readContracts["MetaMultiSig"].interface.encodeFunctionData(txInfo.calldataAbi, [
+        txInput_1,
+        ethers.utils.parseEther(txInput_2),
+      ]);
+    } else {
+      console.log("1111");
+      txCalldata = await readContracts["MetaMultiSig"].interface.encodeFunctionData(txInfo.calldataAbi, [txInput_1]);
+    }
+    console.log("EXECUTE txCalldata", txCalldata);
+    console.log("EXECUTE calldataAbi", txInfo.calldataAbi);
 
     const txResult = await tx({
       to: txInfo.to,
       value: txInfo.value,
       data: await readContracts["MetaMultiSig"].interface.encodeFunctionData(
         "verifyAndExecuteTx(address, uint256, uint256, bytes, bytes[])",
-        [txInfo.to, chainId, txInfo.value, txData, orderedSignatures],
+        [txInfo.to, chainId, txInfo.value, txCalldata, orderedSignatures],
       ),
     });
 
@@ -157,17 +224,19 @@ function Home({ address, chainId, readContracts, writeContracts, mainnetProvider
   }
 
   function handleTxChange(option) {
-    console.log(option);
     setCalldataAbi(option.value);
     switch (option.value) {
       case "addSigner(address)":
-        setTxInputPlaceHolder("New Signer (address)");
+        setTxInputPlaceHolder_1("New Signer (address)");
         break;
       case "removeSigner(address)":
-        setTxInputPlaceHolder("Removed Signer (address)");
+        setTxInputPlaceHolder_1("Removed Signer (address)");
         break;
       case "updateRequiredSignatures(uint256)":
-        setTxInputPlaceHolder("Required Sigs (uint)");
+        setTxInputPlaceHolder_1("Required Sigs (uint)");
+      case "withdrawEth(address,uint256)":
+        setTxInputPlaceHolder_1("Receiver (address)");
+        setTxInputPlaceHolder_2("Amount in ETH (uint)");
         break;
     }
   }
@@ -176,8 +245,16 @@ function Home({ address, chainId, readContracts, writeContracts, mainnetProvider
     <div>
       <div style={{ border: "1px solid #cccccc", padding: 16, width: 400, margin: "auto", marginTop: 64 }}>
         <h2>Meta Multisig Wallet</h2>
-        Your Address:
-        <Address address={address} ensProvider={mainnetProvider} fontSize={16} />
+
+        {readContracts["MetaMultiSig"] && (
+          <div>
+            <div>
+              {" "}
+              <Address address={readContracts["MetaMultiSig"].address} ensProvider={mainnetProvider} fontSize={16} />
+            </div>
+            <Balance address={readContracts["MetaMultiSig"].address} provider={localProvider} price={price} />
+          </div>
+        )}
         <Divider />
         <h4>Signatures Required: {`${signaturesRequired}`}</h4>
         <h4>Nr of Signers: {`${nrOfSigners}`}</h4>
@@ -216,14 +293,23 @@ function Home({ address, chainId, readContracts, writeContracts, mainnetProvider
             <Divider />
             <h3>Confirm Tx Input</h3>
             <Input
-              value={txInput}
-              placeholder="Tx Input"
+              value={txInput_1}
+              placeholder="Confirm input (optional)"
               onChange={e => {
-                setTxInput(e.target.value);
+                setTxInput_1(e.target.value);
               }}
             />
+
+            <Input
+              value={txInput_2}
+              placeholder="Confirm input (optional)"
+              onChange={e => {
+                setTxInput_2(e.target.value);
+              }}
+            />
+
             <Button
-              disabled={signaturesRequired > orderedSignatures.length || !txInput}
+              disabled={signaturesRequired > orderedSignatures.length || !txInput_1}
               onClick={() => {
                 executeTx();
               }}
@@ -232,7 +318,7 @@ function Home({ address, chainId, readContracts, writeContracts, mainnetProvider
             </Button>
 
             <Button
-              disabled={!txInput}
+              disabled={!txInput_1}
               onClick={() => {
                 signTx();
               }}
@@ -242,38 +328,92 @@ function Home({ address, chainId, readContracts, writeContracts, mainnetProvider
           </div>
         )}
         <Divider />
-        <h3>Create Transaction</h3>
-        <Select
-          labelInValue
-          defaultValue={{
-            value: "addSigner(address)",
-            label: "Add Signer",
-          }}
-          style={{
-            width: 170,
-          }}
-          onChange={handleTxChange}
-        >
-          <Option value="addSigner(address)">Add Signer</Option>
-          <Option value="removeSigner(address)">Remove Signer</Option>
-          <Option value="updateRequiredSignatures(uint256)">Update Req Sigs</Option>
-        </Select>
-        <Input
-          value={txInput}
-          placeholder={txInputPlaceHolder}
-          onChange={e => {
-            setTxInput(e.target.value);
-          }}
-        />
-        <Button
-          onClick={() => {
-            createAndSignTx();
-          }}
-        >
-          Sign Tx & save Signature
-        </Button>
-        <Divider />
+        {!Object.keys(txInfo).length && (
+          <div>
+            <h3>Create Transaction</h3>
+            <Select
+              labelInValue
+              defaultValue={{
+                value: "addSigner(address)",
+                label: "Add Signer",
+              }}
+              style={{
+                width: 170,
+              }}
+              onChange={handleTxChange}
+            >
+              <Option value="addSigner(address)">Add Signer</Option>
+              <Option value="removeSigner(address)">Remove Signer</Option>
+              <Option value="updateRequiredSignatures(uint256)">Update Req Sigs</Option>
+              <Option value="withdrawEth(address,uint256)">Send ETH</Option>
+            </Select>
+            <Input
+              value={txInput_1}
+              placeholder={txInputPlaceHolder_1}
+              onChange={e => {
+                setTxInput_1(e.target.value);
+              }}
+            />
+            {calldataAbi == "withdrawEth(address,uint256)" && (
+              <Input
+                value={txInput_2}
+                placeholder={txInputPlaceHolder_2}
+                onChange={e => {
+                  setTxInput_2(e.target.value);
+                }}
+              />
+            )}
+            <Button
+              onClick={() => {
+                createAndSignTx();
+              }}
+            >
+              Sign Tx & save Signature
+            </Button>
+            <Divider />{" "}
+          </div>
+        )}
       </div>
+      <Events
+        contracts={readContracts}
+        contractName="MetaMultiSig"
+        eventName="TxExecuted"
+        localProvider={localProvider}
+        mainnetProvider={mainnetProvider}
+        startBlock={1}
+      />
+      {/* <Events
+        contracts={readContracts}
+        contractName="MetaMultiSig"
+        eventName="SignerAdded"
+        localProvider={localProvider}
+        mainnetProvider={mainnetProvider}
+        startBlock={1}
+      />
+      <Events
+        contracts={readContracts}
+        contractName="MetaMultiSig"
+        eventName="SignerRemoved"
+        localProvider={localProvider}
+        mainnetProvider={mainnetProvider}
+        startBlock={1}
+      />
+      <Events
+        contracts={readContracts}
+        contractName="MetaMultiSig"
+        eventName="UpdatedRequiredSignatures"
+        localProvider={localProvider}
+        mainnetProvider={mainnetProvider}
+        startBlock={1}
+      />
+      <Events
+        contracts={readContracts}
+        contractName="MetaMultiSig"
+        eventName="EthWithdrawn"
+        localProvider={localProvider}
+        mainnetProvider={mainnetProvider}
+        startBlock={1}
+      /> */}
     </div>
   );
 }

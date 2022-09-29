@@ -313,6 +313,7 @@ function App(props) {
         <Route exact path="/">
           {/* pass in any web3 props to this Home component. For example, yourLocalBalance */}
           <Home
+            localProvider={localProvider}
             contractConfig={contractConfig}
             address={address}
             chainId={localChainId}
@@ -322,6 +323,7 @@ function App(props) {
             poolServerUrl={poolServerUrl}
             tx={tx}
             userSigner={userSigner}
+            price={price}
           />
         </Route>
         <Route exact path="/debug">

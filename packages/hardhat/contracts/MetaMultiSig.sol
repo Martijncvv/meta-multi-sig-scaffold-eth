@@ -21,6 +21,11 @@ contract MetaMultiSig {
     /// @param requiredSignatures New amount of required signatures
     event UpdatedRequiredSignatures(uint256 requiredSignatures);
 
+    /// @notice Emitted when ETH is withdrawn
+    /// @param receiver Address of receiver
+    /// @param value Transfered amount of ETH
+    event EthWithdrawn(address receiver, uint256 value);
+
     /// @notice Emitted when a tx is executed
     /// @param from Address of tx sender
     /// @param to Address of tx receiver
@@ -114,6 +119,15 @@ contract MetaMultiSig {
         );
         signaturesRequired = _signaturesRequired;
         emit UpdatedRequiredSignatures(_signaturesRequired);
+    }
+
+    /// @notice Withdraws ETH out of contract
+    /// @param _receiver  Address of receiver
+    /// @param _value  Transfered value
+    function withdrawEth(address _receiver, uint256 _value) public self {
+        (bool success, ) = _receiver.call{value: _value}("");
+        require(success, "Failed to send Ether");
+        emit EthWithdrawn(_receiver, _value);
     }
 
     /// @notice Creates encodePacked keccak256 hash of tx info

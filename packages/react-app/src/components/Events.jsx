@@ -21,6 +21,7 @@ import Address from "./Address";
 
 export default function Events({ contracts, contractName, eventName, localProvider, mainnetProvider, startBlock }) {
   // 📟 Listen for broadcast events
+
   const events = useEventListener(contracts, contractName, eventName, localProvider, startBlock);
 
   return (
@@ -32,6 +33,7 @@ export default function Events({ contracts, contractName, eventName, localProvid
         renderItem={item => {
           return (
             <List.Item key={item.blockNumber + "_" + item.args.sender + "_" + item.args.purpose}>
+              <p>{item.event}</p>
               <Address address={item.args[0]} ensProvider={mainnetProvider} fontSize={16} />
               {item.args[1]}
             </List.Item>
