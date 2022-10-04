@@ -1,6 +1,10 @@
 # Meta-Multi-Sig Wallet
 
-An off-chain signature based multi sig wallet exercise
+An off-chain signature based multi sig wallet exercise;
+
+- Solidity Smartcontract wallet with functionality to verify signatures, add/remove signers and execute txs.
+- Backend to store signatures.
+- Dashboard to interact with backend and blockchain.
 
 ## 'Add Signer' tx Option
 
