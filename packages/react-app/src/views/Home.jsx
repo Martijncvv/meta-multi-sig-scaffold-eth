@@ -85,28 +85,22 @@ function Home({
         unencodedCalldata = `${calldataAbi}, [
           ${txInput_1},${txInput_2}
         ]`;
-        console.log("2222");
 
         txCalldata = readContracts["MetaMultiSig"].interface.encodeFunctionData(calldataAbi, [
           txInput_1,
           ethers.utils.parseEther(txInput_2),
         ]);
       } else {
-        console.log("1111");
         unencodedCalldata = `${calldataAbi}, [
           ${txInput_1}
         ]`;
         txCalldata = readContracts["MetaMultiSig"].interface.encodeFunctionData(calldataAbi, [txInput_1]);
       }
 
-      console.log("CREATE AND SIGN txCalldata ", txCalldata);
-      console.log("CREATE AND SIGN calldataAbi ", calldataAbi);
-
       const dataHash = ethers.utils.solidityKeccak256(
         ["address", "uint256", "uint256", "uint256", "bytes"],
         [txTo, txNonce, chainId, txValue, txCalldata],
       );
-      console.log("CREATE AND SIGN dataHash ", dataHash);
 
       const txSignature = await userSigner.signMessage(ethers.utils.arrayify(dataHash));
 
@@ -138,27 +132,20 @@ function Home({
   async function signTx() {
     if (isSigner) {
       let txCalldata;
-      console.log("txInput_1 ", txInput_1);
-      console.log("txInput_2 ", txInput_2);
+
       if (txInput_2) {
         txCalldata = readContracts["MetaMultiSig"].interface.encodeFunctionData(txInfo.calldataAbi, [
           txInput_1,
           ethers.utils.parseEther(txInput_2),
         ]);
-        console.log("2222");
       } else {
-        console.log("1111");
         txCalldata = readContracts["MetaMultiSig"].interface.encodeFunctionData(txInfo.calldataAbi, [txInput_1]);
       }
-
-      console.log("SIGN txCalldata ", txCalldata);
-      console.log(" SIGN calldataAbi ", txInfo.calldataAbi);
 
       const dataHash = ethers.utils.solidityKeccak256(
         ["address", "uint256", "uint256", "uint256", "bytes"],
         [txInfo.to, txNonce, chainId, txInfo.value, txCalldata],
       );
-      console.log(" SIGN dataHash ", dataHash);
 
       const txSignature = await userSigner.signMessage(ethers.utils.arrayify(dataHash));
 
@@ -183,21 +170,15 @@ function Home({
 
   async function executeTx() {
     let txCalldata;
-    console.log("txInput_1 ", txInput_1);
-    console.log("txInput_2 ", txInput_2);
 
     if (txInput_2) {
-      console.log("2222");
       txCalldata = await readContracts["MetaMultiSig"].interface.encodeFunctionData(txInfo.calldataAbi, [
         txInput_1,
         ethers.utils.parseEther(txInput_2),
       ]);
     } else {
-      console.log("1111");
       txCalldata = await readContracts["MetaMultiSig"].interface.encodeFunctionData(txInfo.calldataAbi, [txInput_1]);
     }
-    console.log("EXECUTE txCalldata", txCalldata);
-    console.log("EXECUTE calldataAbi", txInfo.calldataAbi);
 
     const txResult = await tx({
       to: txInfo.to,

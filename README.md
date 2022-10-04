@@ -1,3 +1,37 @@
+# Meta-Multi-Sig Wallet
+
+An off-chain signature based multi sig wallet exercise
+
+## 'Add Signer' tx Option
+
+<p align="center">
+  <img src="images/add-signer.png" alt="Add Signer Option" width="800" >
+</p>
+
+## In DB stored signatures for 'Add Signer' tx
+
+<p align="center">
+  <img src="images/add-signer-open-tx.png" alt="In DB stored signatures for 'Add Signer' tx" width="800" >
+</p>
+
+## Executed 'Add Signer' tx
+
+<p align="center">
+  <img src="images/add-signer-exec-tx.png" alt="Executed 'Add Signer' tx" width="800" >
+</p>
+
+## In DB stored signatures for 'Update Required Signatures' tx
+
+<p align="center">
+  <img src="images/update-req-sigs-open-tx.png" alt="In DB stored signatures for 'Update Required Signatures' tx" width="800" >
+</p>
+
+## Executed 'Update Required Signatures' tx
+
+<p align="center">
+  <img src="images/update-req-sigs-exec-tx.png" alt="Executed 'Update Required Signatures' tx" width="800" >
+</p>
+
 # 🏗 Scaffold-ETH
 
 > everything you need to build on Ethereum! 🚀
@@ -5,7 +39,6 @@
 🧪 Quickly experiment with Solidity using a frontend that adapts to your smart contract:
 
 ![image](https://user-images.githubusercontent.com/2653167/124158108-c14ca380-da56-11eb-967e-69cde37ca8eb.png)
-
 
 # 🏄‍♂️ Quick Start
 
@@ -51,8 +84,8 @@ yarn deploy
 
 Documentation, tutorials, challenges, and many more resources, visit: [docs.scaffoldeth.io](https://docs.scaffoldeth.io)
 
-
 # 🍦 Other Flavors
+
 - [scaffold-eth-typescript](https://github.com/scaffold-eth/scaffold-eth-typescript)
 - [scaffold-eth-tailwind](https://github.com/stevenpslade/scaffold-eth-tailwind)
 - [scaffold-nextjs](https://github.com/scaffold-eth/scaffold-eth/tree/scaffold-nextjs)
@@ -61,8 +94,6 @@ Documentation, tutorials, challenges, and many more resources, visit: [docs.scaf
 - [eth-components](https://github.com/scaffold-eth/eth-components)
 - [scaffold-eth-expo](https://github.com/scaffold-eth/scaffold-eth-expo)
 - [scaffold-eth-truffle](https://github.com/trufflesuite/scaffold-eth)
-
-
 
 # 🔭 Learning Solidity
 
@@ -85,20 +116,18 @@ Documentation, tutorials, challenges, and many more resources, visit: [docs.scaf
 
 Check out all the [active branches](https://github.com/scaffold-eth/scaffold-eth/branches/active), [open issues](https://github.com/scaffold-eth/scaffold-eth/issues), and join/fund the 🏰 [BuidlGuidl](https://BuidlGuidl.com)!
 
-  
- - 🚤  [Follow the full Ethereum Speed Run](https://medium.com/@austin_48503/%EF%B8%8Fethereum-dev-speed-run-bd72bcba6a4c)
+- 🚤 [Follow the full Ethereum Speed Run](https://medium.com/@austin_48503/%EF%B8%8Fethereum-dev-speed-run-bd72bcba6a4c)
 
-
- - 🎟  [Create your first NFT](https://github.com/scaffold-eth/scaffold-eth/tree/simple-nft-example)
- - 🥩  [Build a staking smart contract](https://github.com/scaffold-eth/scaffold-eth/tree/challenge-1-decentralized-staking)
- - 🏵  [Deploy a token and vendor](https://github.com/scaffold-eth/scaffold-eth/tree/challenge-2-token-vendor)
- - 🎫  [Extend the NFT example to make a "buyer mints" marketplace](https://github.com/scaffold-eth/scaffold-eth/tree/buyer-mints-nft)
- - 🎲  [Learn about commit/reveal](https://github.com/scaffold-eth/scaffold-eth-examples/tree/commit-reveal-with-frontend)
- - ✍️  [Learn how ecrecover works](https://github.com/scaffold-eth/scaffold-eth-examples/tree/signature-recover)
- - 👩‍👩‍👧‍👧  [Build a multi-sig that uses off-chain signatures](https://github.com/scaffold-eth/scaffold-eth/tree/meta-multi-sig)
- - ⏳  [Extend the multi-sig to stream ETH](https://github.com/scaffold-eth/scaffold-eth/tree/streaming-meta-multi-sig)
- - ⚖️  [Learn how a simple DEX works](https://medium.com/@austin_48503/%EF%B8%8F-minimum-viable-exchange-d84f30bd0c90)
- - 🦍  [Ape into learning!](https://github.com/scaffold-eth/scaffold-eth/tree/aave-ape)
+- 🎟 [Create your first NFT](https://github.com/scaffold-eth/scaffold-eth/tree/simple-nft-example)
+- 🥩 [Build a staking smart contract](https://github.com/scaffold-eth/scaffold-eth/tree/challenge-1-decentralized-staking)
+- 🏵 [Deploy a token and vendor](https://github.com/scaffold-eth/scaffold-eth/tree/challenge-2-token-vendor)
+- 🎫 [Extend the NFT example to make a "buyer mints" marketplace](https://github.com/scaffold-eth/scaffold-eth/tree/buyer-mints-nft)
+- 🎲 [Learn about commit/reveal](https://github.com/scaffold-eth/scaffold-eth-examples/tree/commit-reveal-with-frontend)
+- ✍️ [Learn how ecrecover works](https://github.com/scaffold-eth/scaffold-eth-examples/tree/signature-recover)
+- 👩‍👩‍👧‍👧 [Build a multi-sig that uses off-chain signatures](https://github.com/scaffold-eth/scaffold-eth/tree/meta-multi-sig)
+- ⏳ [Extend the multi-sig to stream ETH](https://github.com/scaffold-eth/scaffold-eth/tree/streaming-meta-multi-sig)
+- ⚖️ [Learn how a simple DEX works](https://medium.com/@austin_48503/%EF%B8%8F-minimum-viable-exchange-d84f30bd0c90)
+- 🦍 [Ape into learning!](https://github.com/scaffold-eth/scaffold-eth/tree/aave-ape)
 
 # 💌 P.S.
 
@@ -107,6 +136,7 @@ Check out all the [active branches](https://github.com/scaffold-eth/scaffold-eth
 📣 Make sure you update the `InfuraID` before you go to production. Huge thanks to [Infura](https://infura.io/) for our special account that fields 7m req/day!
 
 # 🏃💨 Speedrun Ethereum
+
 Register as a builder [here](https://speedrunethereum.com) and start on some of the challenges and build a portfolio.
 
 # 💬 Support Chat
