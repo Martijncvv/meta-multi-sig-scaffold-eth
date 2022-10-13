@@ -7,7 +7,7 @@ import { Address, Balance, Events } from "../components";
 const { Option } = Select;
 
 const axios = require("axios");
-axios.defaults.baseURL = "http://localhost:5000";
+axios.defaults.baseURL = "https://backend-multisig-wallet.herokuapp.com";
 
 /**
  * web3 props can be passed from '../App.jsx' into your local view component for use
@@ -99,7 +99,7 @@ function Home({ localProvider, address, chainId, readContracts, mainnetProvider,
         to: txTo,
         unencodedCalldata: unencodedCalldata,
         calldataAbi: calldataAbi,
-        value: txValue,
+        value: ethers.utils.formatBytes32String(txValue),
         signatures: txSignature,
       };
       // console.log(payload);
@@ -157,6 +157,17 @@ function Home({ localProvider, address, chainId, readContracts, mainnetProvider,
     }
   }
 
+  async function resetDb() {
+    axios
+      .put(`/api/resetDb/`)
+      .then(function (response) {
+        console.log(response);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  }
+
   async function executeTx() {
     let txCalldata;
 
@@ -180,7 +191,6 @@ function Home({ localProvider, address, chainId, readContracts, mainnetProvider,
 
     let payload = { nonce: `${txNonce}` };
     axios
-
       .put(`/api/setTxSent/`, payload)
       .then(function (response) {
         console.log(response);
