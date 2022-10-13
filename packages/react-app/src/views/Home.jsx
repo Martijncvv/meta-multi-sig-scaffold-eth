@@ -15,18 +15,7 @@ axios.defaults.baseURL = "http://localhost:5000";
  * @param {*} readContracts contracts from current chain already pre-loaded using ethers contract module. More here https://docs.ethers.io/v5/api/contract/contract/
  * @returns react component
  **/
-function Home({
-  localProvider,
-  address,
-  chainId,
-  readContracts,
-  writeContracts,
-  mainnetProvider,
-  poolServerUrl,
-  tx,
-  userSigner,
-  price,
-}) {
+function Home({ localProvider, address, chainId, readContracts, mainnetProvider, tx, userSigner, price }) {
   const [txInput_1, setTxInput_1] = useState("");
   const [txInput_2, setTxInput_2] = useState("");
   const [txInputPlaceHolder_1, setTxInputPlaceHolder_1] = useState("New Signer (address)");
@@ -57,7 +46,7 @@ function Home({
         signatures.sort((a, b) => {
           return a - b;
         });
-        if (response.data.executed == true) {
+        if (response.data.executed === true) {
           setMessage("No open tx available, create a transaction");
         } else {
           setMessage("");
@@ -215,6 +204,7 @@ function Home({
         break;
       case "updateRequiredSignatures(uint256)":
         setTxInputPlaceHolder_1("Required Sigs (uint)");
+        break;
       case "withdrawEth(address,uint256)":
         setTxInputPlaceHolder_1("Receiver (address)");
         setTxInputPlaceHolder_2("Amount in ETH (uint)");
@@ -255,7 +245,7 @@ function Home({
         >
           Get Open Tx Details
         </Button>
-        {Object.keys(txInfo).length > 0 && txInfo.executed == false && (
+        {Object.keys(txInfo).length > 0 && txInfo.executed === false && (
           <div>
             <Divider />
             <h3>Open Transaction</h3>
@@ -335,7 +325,7 @@ function Home({
                 setTxInput_1(e.target.value);
               }}
             />
-            {calldataAbi == "withdrawEth(address,uint256)" && (
+            {calldataAbi === "withdrawEth(address,uint256)" && (
               <Input
                 value={txInput_2}
                 placeholder={txInputPlaceHolder_2}

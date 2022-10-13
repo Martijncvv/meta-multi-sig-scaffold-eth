@@ -6,31 +6,41 @@ An off-chain signature based multi sig wallet exercise;
 - Backend to store signatures.
 - Dashboard to interact with backend and blockchain.
 
-## 'Add Signer' tx Option
+### Goerli Testnet Verified Contract
+
+https://goerli.etherscan.io/address/0x26872aeA59d2a8072b06A7E853303b7185070B3A#code
+
+### Demo Website
+
+https://longing-earthquake.surge.sh/
+
+## Functionality Examples; 2 accounts
+
+### 'Add Signer' tx Option
 
 <p align="center">
   <img src="images/add-signer.png" alt="Add Signer Option" width="800" >
 </p>
 
-## In DB stored signatures for 'Add Signer' tx
+### In DB stored signatures for 'Add Signer' tx
 
 <p align="center">
   <img src="images/add-signer-open-tx.png" alt="In DB stored signatures for 'Add Signer' tx" width="800" >
 </p>
 
-## Executed 'Add Signer' tx
+### Executed 'Add Signer' tx
 
 <p align="center">
   <img src="images/add-signer-exec-tx.png" alt="Executed 'Add Signer' tx" width="800" >
 </p>
 
-## In DB stored signatures for 'Update Required Signatures' tx
+### In DB stored signatures for 'Update Required Signatures' tx
 
 <p align="center">
   <img src="images/update-req-sigs-open-tx.png" alt="In DB stored signatures for 'Update Required Signatures' tx" width="800" >
 </p>
 
-## Executed 'Update Required Signatures' tx
+### Executed 'Update Required Signatures' tx
 
 <p align="center">
   <img src="images/update-req-sigs-exec-tx.png" alt="Executed 'Update Required Signatures' tx" width="800" >

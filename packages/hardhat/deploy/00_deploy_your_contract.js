@@ -20,7 +20,13 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
   await deploy("MetaMultiSig", {
     // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
     from: deployer,
-    args: [["0x58a6b716dac79f4d01aec69837142489b60538be"], 1],
+    args: [
+      [
+        "0x56d8Bf89371Ba9eD001a27aC7A1fAB640Afe4f91",
+        "0x60a88eC7941De1Cb1f84b7Ea475Ae4B61F3Cfe5A",
+      ],
+      2,
+    ],
     log: true,
     waitConfirmations: 5,
   });
@@ -80,3 +86,5 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
   // }
 };
 module.exports.tags = ["MetaMultiSig"];
+
+// 0x26872aeA59d2a8072b06A7E853303b7185070B3A
