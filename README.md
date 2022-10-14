@@ -12,7 +12,7 @@ https://goerli.etherscan.io/address/0x26872aeA59d2a8072b06A7E853303b7185070B3A#c
 
 ### Demo Website
 
-https://absurd-jellyfish.surge.sh/
+https://literate-notebook.surge.sh/
 
 ### Backend URL
 

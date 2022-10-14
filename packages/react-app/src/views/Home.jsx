@@ -90,6 +90,8 @@ function Home({ localProvider, address, chainId, readContracts, mainnetProvider,
         ["address", "uint256", "uint256", "uint256", "bytes"],
         [txTo, txNonce, chainId, txValue, txCalldata],
       );
+      console.log("txValue");
+      console.log(txValue);
 
       const txSignature = await userSigner.signMessage(ethers.utils.arrayify(dataHash));
 
@@ -99,10 +101,10 @@ function Home({ localProvider, address, chainId, readContracts, mainnetProvider,
         to: txTo,
         unencodedCalldata: unencodedCalldata,
         calldataAbi: calldataAbi,
-        value: ethers.utils.formatBytes32String(txValue),
+        value: txValue,
         signatures: txSignature,
       };
-      // console.log(payload);
+
       axios
         .post(`/api/storeTx/`, payload)
         .then(function (response) {
@@ -135,7 +137,8 @@ function Home({ localProvider, address, chainId, readContracts, mainnetProvider,
         ["address", "uint256", "uint256", "uint256", "bytes"],
         [txInfo.to, txNonce, chainId, txInfo.value, txCalldata],
       );
-
+      console.log("txInfo.value");
+      console.log(txInfo.value);
       const txSignature = await userSigner.signMessage(ethers.utils.arrayify(dataHash));
 
       let payload = {
@@ -182,7 +185,7 @@ function Home({ localProvider, address, chainId, readContracts, mainnetProvider,
 
     const txResult = await tx({
       to: txInfo.to,
-      value: txInfo.value,
+      value: ethers.BigNumber.from(txInfo.value),
       data: await readContracts["MetaMultiSig"].interface.encodeFunctionData(
         "verifyAndExecuteTx(address, uint256, uint256, bytes, bytes[])",
         [txInfo.to, chainId, txInfo.value, txCalldata, orderedSignatures],
@@ -354,6 +357,13 @@ function Home({ localProvider, address, chainId, readContracts, mainnetProvider,
             <Divider />{" "}
           </div>
         )}
+        <Button
+          onClick={() => {
+            resetDb();
+          }}
+        >
+          Reset DB
+        </Button>
       </div>
       <Events
         contracts={readContracts}
